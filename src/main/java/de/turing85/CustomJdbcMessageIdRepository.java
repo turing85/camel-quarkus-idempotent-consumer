@@ -8,13 +8,10 @@ import lombok.Setter;
 import org.apache.camel.CamelContext;
 import org.apache.camel.processor.idempotent.jdbc.JdbcOrphanLockAwareIdempotentRepository;
 
+@Getter
+@Setter
 class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentRepository {
-  @Getter
-  @Setter
   private String updateDoneString;
-
-  @Getter
-  @Setter
   private String orphanRemovalString;
 
   public CustomJdbcMessageIdRepository(
