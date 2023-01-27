@@ -1,0 +1,26 @@
+quarkus:
+  datasource:
+    db-kind: postgresql
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    jdbc:
+      url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+
+
+"%dev":
+  quarkus:
+    datasource:
+      db-kind: postgresql
+      username: camel
+      password: camel
+      jdbc:
+        url: jdbc:postgresql://localhost:5432/camel
+    flyway:
+      migrate-at-start: true
+
+adapter:
+  idempotency:
+    table-name: idempotency
+    lock-max-age: 30S
+    keep-alive-interval: 3S
+  name: super-app

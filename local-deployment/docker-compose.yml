@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  # postgres + pgadmin4 web UI
+  postgres:
+    image: postgres@sha256:${POSTGRES_SHA}
+    volumes:
+      - ${LOCAL_DEPLOYMENT_DIR:-.}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:ro
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_DATABASES: camel
+    ports:
+      - "5432:5432"
+  pgadmin4:
+    image: dpage/pgadmin4@sha256:${PGADMIN4_SHA}
+    volumes:
+      - ${LOCAL_DEPLOYMENT_DIR:-.}/pgadmin4/pgadmin4/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - postgres
+    ports:
+      - "8091:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: pgadmin4
