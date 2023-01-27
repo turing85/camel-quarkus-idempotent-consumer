@@ -51,9 +51,9 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
             processorName = ? AND
             messageId = ?
         """);
-    // get the default delete string, extend the conditiion to only outdated and unfinished entries
+    // get the default delete string, extend the condition to only outdated and unfinished entries
     setOrphanRemovalString(getDeleteString() + " AND done = 'false' AND createdAt <= ?");
-    // we never want remove anything from the table. Thus, we construct a query that will never
+    // we never want to remove anything from the table. Thus, we construct a query that will never
     // remove anything
     setDeleteString("""
         DELETE FROM CAMEL_MESSAGEPROCESSED
