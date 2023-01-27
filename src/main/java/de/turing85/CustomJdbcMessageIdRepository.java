@@ -33,7 +33,8 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
             processorName,
             messageId,
             createdAt)
-        VALUES (?, ?, ?)""");
+        VALUES (?, ?, ?)
+        """);
     setUpdateDoneString("""
         UPDATE CAMEL_MESSAGEPROCESSED
         SET done = 'true', createdAt = ?
