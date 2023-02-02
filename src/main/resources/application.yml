@@ -6,13 +6,6 @@ quarkus:
     jdbc:
       url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}
 
-adapter:
-  idempotency:
-    table-name: idempotency
-    lock-max-age: 30S
-    keep-alive-interval: 3S
-  name: super-app
-
 "%dev":
   quarkus:
     datasource:
@@ -22,4 +15,4 @@ adapter:
       jdbc:
         url: jdbc:postgresql://localhost:5432/camel
     flyway:
-      migrate-at-start: true
+      migrate-at-start: false
