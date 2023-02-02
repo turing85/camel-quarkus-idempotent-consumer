@@ -1,8 +1,6 @@
-CREATE TABLE idempotency (
-    adapterName VARCHAR(255),
+CREATE TABLE CAMEL_MESSAGEPROCESSED (
     processorName VARCHAR(255),
     messageId VARCHAR(100),
     createdAt TIMESTAMP,
-    done BOOLEAN DEFAULT false,
-    PRIMARY KEY (adapterName, processorName, messageId)
-);
+    PRIMARY KEY (processorName, messageId)
+)
