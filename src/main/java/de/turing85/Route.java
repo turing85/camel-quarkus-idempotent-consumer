@@ -77,11 +77,13 @@ public class Route extends RouteBuilder {
 
   @Override
   public void configure() {
-    from(file("in").noop(true).idempotent(false))
+    from(
+        file("in")
+            .noop(true)
+            .idempotent(true)
+            .idempotentRepository(idempotentRepository)
+            .idempotentKey("${file:name}"))
         .routeId(ROUTE_ID)
-        .idempotentConsumer(
-            header("CamelFileName"),
-            idempotentRepository)
         .to(file("out"));
   }
 }
