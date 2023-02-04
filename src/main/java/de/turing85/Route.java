@@ -80,7 +80,7 @@ public class Route extends RouteBuilder {
     from(file("in").noop(true).idempotent(false))
         .routeId(ROUTE_ID)
         .idempotentConsumer(
-            header("CamelFileName"),
+            simple("${file:name}"),
             idempotentRepository)
         .to(file("out"));
   }
