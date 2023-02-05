@@ -2,7 +2,7 @@ package de.turing85;
 
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
 
-import de.turing85.config.AdapterConfig;
+import de.turing85.config.ServiceConfig;
 import de.turing85.config.IdempotencyConfig;
 import javax.enterprise.context.ApplicationScoped;
 import javax.sql.DataSource;
@@ -16,18 +16,18 @@ public class Route extends RouteBuilder {
 
   public Route(
       @SuppressWarnings("CdiInjectionPointsInspection") DataSource dataSource,
-      AdapterConfig adapterConfig,
+      ServiceConfig serviceConfig,
       CamelContext context) {
     idempotentRepository =
-        constructRepository(dataSource, adapterConfig, context);
+        constructRepository(dataSource, serviceConfig, context);
   }
 
   private static CustomJdbcMessageIdRepository constructRepository(
       DataSource dataSource,
-      AdapterConfig adapterConfig,
+      ServiceConfig serviceConfig,
       CamelContext context) {
-    IdempotencyConfig idempotencyConfig = adapterConfig.idempotencyConfig();
-    String adapterName = adapterConfig.name();
+    IdempotencyConfig idempotencyConfig = serviceConfig.idempotencyConfig();
+    String serviceName = serviceConfig.name();
     final CustomJdbcMessageIdRepository repository =
         new CustomJdbcMessageIdRepository(dataSource, ROUTE_ID, context);
     repository.setTableName(idempotencyConfig.tableName());
@@ -36,17 +36,17 @@ public class Route extends RouteBuilder {
     repository.setCreateTableIfNotExists(false);
     repository.setCreateString("""
         CREATE TABLE CAMEL_MESSAGEPROCESSED (
-            adapterName VARCHAR(255),
+            serviceName VARCHAR(255),
             processorName VARCHAR(255),
             messageId VARCHAR(100),
             createdAt TIMESTAMP,
             done BOOLEAN DEFAULT false,
-            PRIMARY KEY (adapterName, processorName, messageId)
+            PRIMARY KEY (serviceName, processorName, messageId)
         )
         """);
     repository.setInsertString("""
         INSERT INTO CAMEL_MESSAGEPROCESSED (
-            adapterName,
+            serviceName,
             processorName,
             messageId,
             createdAt)
@@ -55,23 +55,23 @@ public class Route extends RouteBuilder {
             ?,
             ?,
             ?)
-        """.formatted(adapterName));
-    repository.setUpdateDoneString("""
-        UPDATE CAMEL_MESSAGEPROCESSED
-        SET done = true, createdAt = ?
-        WHERE
-            adapterName = '%s' AND
-            processorName = ? AND
-            messageId = ?
-        """.formatted(adapterName));
+        """.formatted(serviceName));
     repository.setQueryString("""
         SELECT COUNT(*)
         FROM CAMEL_MESSAGEPROCESSED
         WHERE
-            adapterName = '%s' AND
+            serviceName = '%s' AND
             processorName = ? AND
             messageId = ?
-        """.formatted(adapterName));
+        """.formatted(serviceName));
+    repository.setDeleteString("""
+        UPDATE CAMEL_MESSAGEPROCESSED
+        SET done = true, createdAt = CURRENT_TIMESTAMP
+        WHERE
+            serviceName = '%s' AND
+            processorName = ? AND
+            messageId = ?
+        """.formatted(serviceName));
     return repository;
   }
 
