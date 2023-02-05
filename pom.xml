@@ -23,7 +23,6 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
 
     <!-- Dependency versions -->
-    <lombok.version>1.18.24</lombok.version>
     <quarkus.platform.version>2.16.0.Final</quarkus.platform.version>
   </properties>
 
@@ -86,14 +85,6 @@
   </dependencyManagement>
 
   <dependencies>
-    <!-- Annotation Processors -->
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>${lombok.version}</version>
-        <scope>provided</scope>
-      </dependency>
-
     <!-- Quarkus -->
     <dependency>
       <groupId>io.quarkus</groupId>
