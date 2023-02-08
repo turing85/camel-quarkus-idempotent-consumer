@@ -3,11 +3,16 @@ package de.turing85;
 import java.sql.Timestamp;
 import java.util.Objects;
 import javax.sql.DataSource;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.camel.CamelContext;
 import org.apache.camel.processor.idempotent.jdbc.JdbcOrphanLockAwareIdempotentRepository;
-import org.springframework.dao.DataAccessException;
 
+@Getter
+@Setter
 class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentRepository {
+  private String doneString;
+
   public CustomJdbcMessageIdRepository(
       DataSource dataSource,
       String processorName,
@@ -33,12 +38,21 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
             createdAt)
         VALUES (?, ?, ?)
         """);
-    setDeleteString("""
+    setDoneString("""
         UPDATE CAMEL_MESSAGEPROCESSED
         SET done = 'true', createdAt = CURRENT_TIMESTAMP
         WHERE
             processorName = ? AND
             messageId = ?
+        """);
+
+    // This is a query that will never return anything, thus nothing is deleted.
+    // We finalize entries through the updateString query instead, which we call explicitly.
+    setDeleteString("""
+        DELETE FROM CAMEL_MESSAGEPROCESSED
+        WHERE
+            ? = ?
+            AND 1 != 1d
         """);
     setQueryString("""
         SELECT COUNT(*)
@@ -47,25 +61,6 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
             processorName = ? AND
             messageId = ?
         """);
-  }
-
-  @Override
-  protected int insert(String key) {
-    return Objects.requireNonNull(transactionTemplate.execute(status -> {
-      Object savepoint = status.createSavepoint();
-      try {
-        return super.insert(key);
-      } catch (DataAccessException e) {
-        status.rollbackToSavepoint(savepoint);
-        return getJdbcTemplate().update(
-            getUpdateTimestampQuery(),
-            new Timestamp(System.currentTimeMillis()),
-            processorName,
-            key);
-      } finally {
-        status.releaseSavepoint(savepoint);
-      }
-    }));
   }
 
   @Override
@@ -85,10 +80,22 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
   }
 
   @Override
+  public void doInit() throws Exception {
+    super.doInit();
+    if (this.getTableName() != null) {
+      this.doneString = this.doneString.replaceFirst("CAMEL_MESSAGEPROCESSED", this.getTableName());
+    }
+
+  }
+
+  @Override
   public boolean confirm(String key) {
     if (super.confirm(key)) {
+      jdbcTemplate.update(getDoneString(), getProcessorName(), key);
       // the parent class has a set of message-ids and processor names that is uses to keep entries
-      // alive. We can remove an entry by calling the delete-method.
+      // alive. We can remove an entry by calling the delete-method. But this will - in return -
+      // execute the deleteString query. This is the reason we constucts a deleteString query that
+      // never anything.
       delete(key);
       return true;
     }

@@ -5,12 +5,15 @@ quarkus:
     password: ${DB_PASSWORD}
     jdbc:
       url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}
+      # TODO: this can be removed when https://github.com/apache/camel/pull/9286 is merged
+      additional-jdbc-properties:
+        autosave: always
 
 service:
   idempotency:
     table-name: idempotency
-    lock-max-age: 30S
-    keep-alive-interval: 3S
+    lock-max-age: 3S
+    keep-alive-interval: 1S
   name: super-app
 
 "%dev":
