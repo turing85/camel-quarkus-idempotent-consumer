@@ -52,7 +52,7 @@ class CustomJdbcMessageIdRepository extends JdbcOrphanLockAwareIdempotentReposit
         DELETE FROM CAMEL_MESSAGEPROCESSED
         WHERE
             ? = ?
-            AND 1 != 1d
+            AND 1 != 1
         """);
     setQueryString("""
         SELECT COUNT(*)
