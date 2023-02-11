@@ -3,8 +3,8 @@ services:
   # postgres + pgadmin4 web UI
   postgres:
     image: postgres:15.2-alpine3.17
-#    volumes:
-#      - ${LOCAL_DEPLOYMENT_DIR:-.}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:ro
+    volumes:
+      - ${LOCAL_DEPLOYMENT_DIR:-.}/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/:ro
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
